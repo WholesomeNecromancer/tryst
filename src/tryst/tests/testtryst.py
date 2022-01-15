@@ -176,6 +176,44 @@ class TestTryst(unittest.TestCase):
         self.assertEqual(len(self.tryst.useroptionarguments), 1, "user specified one option argument")
         self.assertEqual(len(self.tryst.options), 0, "implementer defined no options")
         self.assertEqual(int(self.tryst.useroptionarguments.get(secsoptarg)), 10, "user specified --seconds=10")
+
+    def test_interpret_dictarg(self):
+        someopsh = Option("someotherarg", "does something else")
+        self.tryst.add_option(someopsh)
+        dictarg = {}
+        dictarg["key"] = "value"
+        dictarg["key2"] = True
+        
+        self.tryst.interpret(["tryst.py", dictarg, "--someotherarg"])
+
+        self.assertEqual(len(self.tryst.useroptions), 1, "user supplied one option")
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], dict), "user supplied one user arg that should have type dict")
+        print(str(self.tryst.userargs))
+
+    def test_interpret_boolarg(self):
+        boolthing = True
+        self.tryst.interpret(["tryst.py", boolthing])
+
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], bool), "user-supplied arg was of type bool")
+        self.assertEqual(self.tryst.userargs[0], True, "user-supplied bool arg was True")
+
+    def test_interpret_intarg(self):
+        intthing = 7
+        self.tryst.interpret(["tryst.py", intthing])
+
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], int), "user-supplied arg was of type int")
+        self.assertEqual(self.tryst.userargs[0], 7, "user-supplied int arg was 7")
+
+    def test_interpret_floatarg(self):
+        floatthing = 18.5
+        self.tryst.interpret(["tryst.py", floatthing])
+
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], float), "user-supplied arg was of type float")
+        self.assertEqual(self.tryst.userargs[0], 18.5, "user-supplied int arg was 18.5")
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

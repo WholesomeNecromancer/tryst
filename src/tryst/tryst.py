@@ -118,17 +118,23 @@ class Tryst:
 
         self.debug("interpret inputs = " + str(inputs))
 
+        userinput = inputs[1:]
+        for ui in userinput:
+            if not isinstance(ui, str):     # Non-strings are considered userargs; this helps with code-time chaining   
+                self.userargs.append(ui)
+                userinput.remove(ui)
+
         # Simpler input; do we return a sub-object that is the results?
         # Return a namedtuple of useropts, useroptargs, userargs?
-        self.userargs = [arg for arg in inputs[1:] if not arg.startswith("-")]
+        self.userargs += [arg for arg in userinput if not arg.startswith("-")]
 
         # Options have either - or -- in front of them
         # - options can be stacked, e.g. -dv is equivalent to -d -v
         # -- options are slug-case, no spaces, e.g. --debug or --whole-row
         # option args can be either, and contain an =, e.g. -d=true or --debug=true, and will be worked on in the future
         # NOTE: options do not include leading - or --
-        raw_verbose_options = [opt.replace("--", "") for opt in inputs[1:] if opt.startswith("--") and opt.find("=") < 0]
-        raw_short_options = [opt.replace("-", "") for opt in inputs[1:] if opt.startswith("-") and not opt.startswith("--") and opt.find("=") < 0]
+        raw_verbose_options = [opt.replace("--", "") for opt in userinput if opt.startswith("--") and opt.find("=") < 0]
+        raw_short_options = [opt.replace("-", "") for opt in userinput if opt.startswith("-") and not opt.startswith("--") and opt.find("=") < 0]
 
         # Look for each option rather than at each thing supplied by the user
         # This may be undesirable; it ignores incorrect/invalid/unexpected input
@@ -147,7 +153,7 @@ class Tryst:
         # Parse raw optargs, short and verbose (e.g. -d=true and --debug=true)
         raw_short_optargs = []
         raw_verbose_optargs = []
-        for opt in inputs[1:]:
+        for opt in userinput:
             if opt.find("=") > -1:
                 if opt.startswith("-") and not opt.startswith("--"):
                     raw_short_optargs.append(opt.replace("-", "", 1))
@@ -399,7 +405,7 @@ class Tryst:
         self.useroptions = set()            # duplicates are disregarded
         self.useroptionarguments = {}       # (option-class, user-input)
         self.userargs = []
-        self.START_TIME = None
+        self.START_TIME = None              # TODO: change to TRYSTTIME or some such and actually initialize
         self.SILENT = False
         self.DEBUG = False
         self.appname = ""
