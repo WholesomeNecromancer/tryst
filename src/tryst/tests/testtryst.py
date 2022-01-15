@@ -36,7 +36,7 @@ import os
 #                                 setUp=setupFunc,
 #                                 tearDown=teardownFunc)
 
-class TestTryst(unittest.TestCase):
+class TestInterpret(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         # Whatever setup should happen before any tests in this class
@@ -176,6 +176,43 @@ class TestTryst(unittest.TestCase):
         self.assertEqual(len(self.tryst.useroptionarguments), 1, "user specified one option argument")
         self.assertEqual(len(self.tryst.options), 0, "implementer defined no options")
         self.assertEqual(int(self.tryst.useroptionarguments.get(secsoptarg)), 10, "user specified --seconds=10")
+
+    def test_interpret_dictarg(self):
+        someopsh = Option("someotherarg", "does something else")
+        self.tryst.add_option(someopsh)
+        dictarg = {}
+        dictarg["key"] = "value"
+        dictarg["key2"] = True
+        
+        self.tryst.interpret(["tryst.py", dictarg, "--someotherarg"])
+
+        self.assertEqual(len(self.tryst.useroptions), 1, "user supplied one option")
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], dict), "user supplied one user arg that should have type dict")
+
+    def test_interpret_boolarg(self):
+        boolthing = True
+        self.tryst.interpret(["tryst.py", boolthing])
+
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], bool), "user-supplied arg was of type bool")
+        self.assertEqual(self.tryst.userargs[0], True, "user-supplied bool arg was True")
+
+    def test_interpret_intarg(self):
+        intthing = 7
+        self.tryst.interpret(["tryst.py", intthing])
+
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], int), "user-supplied arg was of type int")
+        self.assertEqual(self.tryst.userargs[0], 7, "user-supplied int arg was 7")
+
+    def test_interpret_floatarg(self):
+        floatthing = 18.5
+        self.tryst.interpret(["tryst.py", floatthing])
+
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
+        self.assertTrue(isinstance(self.tryst.userargs[0], float), "user-supplied arg was of type float")
+        self.assertEqual(self.tryst.userargs[0], 18.5, "user-supplied int arg was 18.5")
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -202,6 +239,8 @@ class TestTrystContext(unittest.TestCase):
         self.assertEqual(self.tryst.appdir, os.path.abspath(os.getcwd()))
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# TODO: add tests to ensure that specifying a tryst.config before calling e.g.
+# tryst.get_config_value() allows for proper 'overriding' of config
 class TestTrystConfig(unittest.TestCase):
     def setUp(self):
         # Setup that will be performed before EACH test* function
@@ -238,6 +277,34 @@ class TestTrystConfig(unittest.TestCase):
     def test_config_pythongivendefault(self):
         egval = self.tryst.get_config_value("fakekey", "notthere", configfile="tempconfig.json")
         self.assertEqual(egval, "notthere", "fakekey is not present")
+
+    def test_config_set_before_get(self):
+        self.make_config_file()
+        man_config = {}
+        man_config["somekey"] = "someval"
+        self.tryst._config = man_config
+        
+        retval = self.tryst.get_config_value("somekey")
+        
+        self.assertIsNotNone(retval)
+        self.assertEqual(retval, "someval", "config[\"somekey\"] should = someval")
+
+        self.cleanup_config_file()
+    
+    def test_config_set_before_consort(self):
+        self.make_config_file()
+        man_config = {}
+        man_config["somekey"] = "someval"
+        self.tryst._config = man_config
+
+        self.tryst.consort(["tryst.py", "a"])
+
+        retval = self.tryst.get_config_value("somekey")
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied 1 arg")
+        self.assertIsNotNone(retval)
+        self.assertEqual(retval, "someval", "config should contain somekey with value someval")
+
+        self.cleanup_config_file()
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
