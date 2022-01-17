@@ -36,7 +36,7 @@ import os
 #                                 setUp=setupFunc,
 #                                 tearDown=teardownFunc)
 
-class TestTryst(unittest.TestCase):
+class TestInterpret(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         # Whatever setup should happen before any tests in this class
@@ -189,7 +189,6 @@ class TestTryst(unittest.TestCase):
         self.assertEqual(len(self.tryst.useroptions), 1, "user supplied one option")
         self.assertEqual(len(self.tryst.userargs), 1, "user supplied one arg")
         self.assertTrue(isinstance(self.tryst.userargs[0], dict), "user supplied one user arg that should have type dict")
-        print(str(self.tryst.userargs))
 
     def test_interpret_boolarg(self):
         boolthing = True
