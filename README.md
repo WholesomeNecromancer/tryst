@@ -76,7 +76,7 @@ if myoptargval:
 Use `mytryst.output(message)` for result output and `mytryst.error(message)` for error output.
 If you are working to diagnose your app while developing, use `mytryst.debug(message)` to only display output when `--debug` is specified.
 
->*Keep in mind that `mytryst.output` and `mytryst.error` both buffer output to `mytryst.outputbuffer` and `mytryst.errorbuffer` respectively, which are written/flushed via `mytryst.write_stdout()` and `mytryst.write_stderr()`.*
+>*Keep in mind that `mytryst.output` and `mytryst.error` buffer output to `mytryst.outputbuffer` and `mytryst.errorbuffer` respectively, which are written/flushed via `mytryst.write_stdout()` and `mytryst.write_stderr()`.*
 
 7. Write your output:
 `mytryst.write_stdout()`
