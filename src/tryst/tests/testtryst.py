@@ -239,6 +239,8 @@ class TestTrystContext(unittest.TestCase):
         self.assertEqual(self.tryst.appdir, os.path.abspath(os.getcwd()))
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# TODO: add tests to ensure that specifying a tryst.config before calling e.g.
+# tryst.get_config_value() allows for proper 'overriding' of config
 class TestTrystConfig(unittest.TestCase):
     def setUp(self):
         # Setup that will be performed before EACH test* function
@@ -275,6 +277,34 @@ class TestTrystConfig(unittest.TestCase):
     def test_config_pythongivendefault(self):
         egval = self.tryst.get_config_value("fakekey", "notthere", configfile="tempconfig.json")
         self.assertEqual(egval, "notthere", "fakekey is not present")
+
+    def test_config_set_before_get(self):
+        self.make_config_file()
+        man_config = {}
+        man_config["somekey"] = "someval"
+        self.tryst._config = man_config
+        
+        retval = self.tryst.get_config_value("somekey")
+        
+        self.assertIsNotNone(retval)
+        self.assertEqual(retval, "someval", "config[\"somekey\"] should = someval")
+
+        self.cleanup_config_file()
+    
+    def test_config_set_before_consort(self):
+        self.make_config_file()
+        man_config = {}
+        man_config["somekey"] = "someval"
+        self.tryst._config = man_config
+
+        self.tryst.consort(["tryst.py", "a"])
+
+        retval = self.tryst.get_config_value("somekey")
+        self.assertEqual(len(self.tryst.userargs), 1, "user supplied 1 arg")
+        self.assertIsNotNone(retval)
+        self.assertEqual(retval, "someval", "config should contain somekey with value someval")
+
+        self.cleanup_config_file()
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
