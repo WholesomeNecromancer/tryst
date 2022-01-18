@@ -54,11 +54,12 @@ class TestJSONHelper(unittest.TestCase):
 
     def test_save_invalidfilepath(self):
         jsondata = { "key": "value" }
-        saveres = jelper.save("C:\\noonenamesafolderthis\\jval.json", jsondata)
+        invalidpath = os.path.join("C:", "noonenamesafolderthis", "jval.json")
+        saveres = jelper.save(invalidpath, jsondata)
         # Check that the file exists
         self.assertFalse(saveres)
-        self.assertFalse(os.path.exists("C:\\noonenamesafolderthis\\jval.json"))
-        self.assertFalse(os.path.isfile("C:\\noonenamesafolderthis\\jval.json"))
+        self.assertFalse(os.path.exists(invalidpath))
+        self.assertFalse(os.path.isfile(invalidpath))
 
     def test_save_validdict(self):
         jsondata = { "key": "value" }
