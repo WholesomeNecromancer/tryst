@@ -1,87 +1,106 @@
-# `tryst`
+# Tryst
 CLI support package.
 
 [tryst on Github](https://github.com/WholesomeNecromancer/tryst)
 
 [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0-standalone.html)
 
-The [7 fundamental tenets](https://thesatanictemple.com/blogs/the-satanic-temple-tenets/there-are-seven-fundamental-tenets) of the [Satanic Temple](https://thesatanictemple.com/pages/about-us).
-1. One should strive to act with compassion and empathy toward all creatures in accordance with reason.
-2. The struggle for justice is an ongoing and necessary pursuit that should prevail over laws and institutions.
-3. One's body is inviolable, subject to one's own will alone.
-4. The freedom of others should be respected, including the freedom to offend. To willfully and unjustly encroach upon the freedoms of another is to forgo one's own.
-5. Beliefs should conform to one's best scientific understanding of the world. One should take care never to distort scientific facts to fit one's beliefs.
-6. People are fallible. If one makes a mistake, one should do one's best to rectify it and resolve any harm that might have been caused.
-7. Every tenet is a guiding principle designed to inspire nobility in action and thought. The spirit of compassion, wisdom, and justice should always prevail over the written or spoken word.
+>One's body is inviolable, subject to one's own will alone.
 
-# What `tryst` is:
-A lightweight interface and context package for basic cli features intended for rapid atomic problem-solving and chaining of small building-blocks for greater automation potential.
+# What Tryst is:
+A lightweight interface and context package for basic cli features intended for rapid atomic problem-solving. Built to support code-time chaining between apps for efficient code-reuse and 'build-outward' problem-solving methodologies.
 
-`tryst` attempts to follow SOLID design principles where possible and is a learning experience in action to build a better understanding of Python, CLI development, unit testing, deployment, and more.
+Tryst is lightweight but means to compy with SOLID design principles and is a learning experience in action to build a better understanding of Python, CLI development, unit testing, deployment, support, and more.
 
-Ultimately, apps built with `tryst` are intended to be frozen with `PyInstaller` or an equivalent to be deployed/installed and used as shell apps via Windows PowerShell or Linux bash.
+# What Tryst is not:
+Tryst is not fancy or comprehensive. It is not intended to be flawless, nor to replace more fully-functional and well-established CLI support packages such as [argparse](https://docs.python.org/3/library/argparse.html) or [getopt](https://docs.python.org/3/library/getopt.html). It is a project for learning and for rapid development of personal workflow enhancements and automation.
 
-# What `tryst` is not:
-`tryst` is not fancy or comprehensive. It is not intended to be flawless, nor to replace more fully-functional and well-established CLI support packages such as [argparse](https://docs.python.org/3/library/argparse.html) or [getopt](https://docs.python.org/3/library/getopt.html). It is a project for learning and for rapid development of workflow enhancements and automation.
-
-This is evidenced by very little validation, leaving the burden of understanding on the implementing developer. For example, options and option-arguments are not duplicate-checked; undefined behavior will occur if you define more than one option object with the same brief or verbose tokens. Additionally, most of `tryst`'s methods are public rather than private; this is by design, to provide maximum flexibility to the implementer.
+This is evidenced by very little validation; the burden of understanding is left to the implementing developer. For example, options and option-arguments are not duplicate-checked; undefined behavior will occur if you define more than one option object with the same brief or verbose tokens. Additionally, most of Tryst's methods are public rather than private; this is by design, to provide maximum flexibility to the implementer.
 
 # Features
 - Options and Option-Arguments specifiable via verbose (e.g. `--debug`) and brief (e.g. `-d`) tokens
+    - Brief tokens for options can be stacked e.g. `-abc`
 - Configuration via `config.json` file and `get_config*` API
 - Decoupled output; easily avoid unnecessary spew to `stdout` or `stderr`
     - `write*` api allows easy *to-file* functionality
-- Procedural usage instructions (with room for manual input)
-- Secrets (e.g. credentials) Support via `get_secret` API (TODO: needs encryption)
+- Procedural usage instructions
+- Secrets (e.g. credentials) Support via `get_secret` API
+    - Future development may include credential encryption or similar security features
 
 # Usage
-Your app should have a single-module entrypoint:
+Tryst has recently been upgraded. To implement your own Tryst-based app, inherit Tryst and implement `main()`. Note the `inputs` argument which allows you or another developer to call your Tryst's `main` method with specifiable arguments at code-time, greatly expediting code reuse.
 
-`def main(mytryst=Tryst(), inputs=None):`
+``` python
+from tryst import Tryst     # Tryst class defines your app and its main
+from tryst import Option    # Option defines options and option-arguments e.g. --debug
 
-`mytryst` will be the tryst object your app uses to hold its `options` and `optionarguments`, and it will `consort()` with the given `inputs` to produce output and context; `useroptions`, `useroptionarguments`, and `userargs`.
+class MyTrystApp(Tryst):
+    def main(self, inputs = None):
+        self.appname = "my-tryst-app"
 
->Initializing `mytryst` in this way provides simpler chaining between apps, empowering rapid growth.
+        # ...1. define and add your options and option-arguments here
 
-1. Initialize `tryst` to establish necessary metadata.
-`tryst.initialize(appname, authors, summary, version)`
+        self.consort(inputs)
 
-2. Specify your `options` and `optionarguments`, establishing the rules of engagement for your tryst:
+        # ...2. implement your app's behavior here based on self.userargs, self.useroptions, and self.useroptionarguments
+
+        self.finish()   # Wrap-up and output
 ```
-myoption = Option("my-option", "does something in my app", "m")
-mytryst.add_option(myoption)
 
-myoptionargument = Option("my-option-argument", "does something in my app", "a")
-mytryst.add_option_argument(myoptionargument)
+## Additional Implementation Details
+
+Options, or switches, allow users to toggle functionality in your app. Option-Arguments allow for value-based user-input.
+
+1. Define and add your `options` and `optionarguments`, establishing the rules of engagement for your tryst:
+``` python
+# Option("verbose-token", "description", "optional-brief-token")
+
+# This option can be used with --my-option or -m
+self.myoption = Option("my-option", "switches behavior in my app", "m")
+
+# Add the option to your Tryst
+self.add_option(self.myoption)
+
+# This option-argument can be used with --my-option-argument="some value" or -a="some value"
+self.myoptionargument = Option("my-option-argument", "lets a user specify a value for my app", "a")
+
+# Add the option-argument to your tryst
+self.add_option_argument(self.myoptionargument)
 ```
 
-3. Consort; engage your tryst with the rules specified:
-`mytryst.consort(inputs)`
+2. Govern your app behavior based on the arguments, options, and option-arguments the user specified:
+``` python
+if self.myoption in self.useroptions:
+    # Act on --my-option
 
-4. Govern your app behavior based on the options the user specified:
-```
-if myoption in mytryst.useroptions:
-    # Act on myoption
-
-myoptargval = mytryst.useroptionarguments.get(myoptionargument)
+myoptargval = self.useroptionarguments.get(self.myoptionargument)
 if myoptargval:
-    # Act on myoptionargument
+    # Act on --my-option-argument="some value"
 ```
 
-5. Provide usage instructions based on your app and your tryst's rules:
+### Provide Usage Instructions to Users
 `mytryst.show_usage()`
->Note: this may be appropriate in your app if the user specified no arguments, or no options, or some other criteria; because every app is different, the burden of making the call to provide this usage is on the developer. The `show_usage()` method creates procedural instructions based on your tryst's specified `options` and `optionarguments`.
+>Note: this may be appropriate in your app due to various criteria, such as if the user specified no arguments, or no options; because every app is different, the burden of making the call to provide this usage is on the developer. The `show_usage()` method creates procedural instructions based on your Tryst's specified `options` and `optionarguments`.
 
-6. Keep your output decoupled:
-Use `mytryst.output(message)` for result output and `mytryst.error(message)` for error output.
-If you are working to diagnose your app while developing, use `mytryst.debug(message)` to only display output when `--debug` is specified.
+### Decouple & Buffer Your Output
+Use `self.output(message)` for result output and `self.error(message)` for error output.
+>If you are working to diagnose your app while developing, use `self.debug(message)` to only display output when `--debug` is specified or `self.DEBUG` is set to `True`.
 
->*Keep in mind that `mytryst.output` and `mytryst.error` buffer output to `mytryst.outputbuffer` and `mytryst.errorbuffer` respectively, which are written/flushed via `mytryst.write_stdout()` and `mytryst.write_stderr()`.*
+>*Keep in mind that `self.output` and `self.error` buffer output to `self.outputbuffer` and `self.errorbuffer` respectively, which are written/flushed via `self.write_stdout()` and `self.write_stderr()`.*
 
-7. Write your output:
-`mytryst.write_stdout()`
-`mytryst.write_stderr()`
->Using tryst's write APIs enables other developers to easily control your app's output to better suit their needs.
+### Write Your Output
+To write output and errors to stdout and stderr respectively and simply, call `self.finish()`.
+
+This indicates that your Tryst has concluded and its outputs are ready.
+
+>`finish()` does not call `sys.exit()`, while `quit()` does. `sys.exit()` interferes with app chaining because it ends the current python session completely. To build your app to be easily callable from another and to support app chaining, use `self.finish()` or call the appropriate write methods manually:
+
+``` python
+self.write_stdout()
+self.write_stderr()
+```
+
+Tryst uses `JSONHelper` internally to cleanly format Python `dict` or `list` objects that may be in your Tryst's `outputbuffer` when writing. Expect dictionary and list objects you've passed to `self.output` to be written in an alphabetically sorted, readable, 4-space indented multiline string.
 
 # CLI Conventions
 - short options can be stacked
@@ -98,50 +117,68 @@ If you are working to diagnose your app while developing, use `mytryst.debug(mes
 # Examples
 Trivial example of app chaining:
 
-```
-# tryster.py
+``` python
+#! trystchild.py
+
 from tryst import Tryst
 from tryst import Option
-from tryst import main as trystmain
 
-#--------------------------------------------------------------------------------
-def main(mytryst=Tryst(), inputs=None):
-    appname = "tryster"
-    authors = "wholesomenecromancer"
-    summary = "Tryster demonstrates calling one toolshed app from another at code-time."
-    version = "0.0.1"
-    mytryst.initialize(appname, authors, summary, version)
+class TrystCapitalize(Tryst):
+    def main(self, inputs = None):
+        # self.DEBUG = True
+        self.appname = "tryst-capitalize"
+        self.authors = "wholesomenecromancer"
+        self.summary = "Progeny of Tryst. Capitalizes strings."
+        self.version = "0.x.y"
 
-    silent_option = Option("silent", "Silence output from code-time-called tool.", "s")
-    mytryst.add_option(silent_option)
+        self.consort(inputs)
 
-    mytryst.consort(inputs)
+        for argg in self.userargs:
+            self.output(argg.upper())
+        self.finish()
+#================================================================================
 
-    # Construct a separate tryst object for the other app we'll call
-    theirtryst = Tryst()
+class TrystChild(Tryst):
+    def main(self, inputs = None):
+        # self.DEBUG = True
+        self.appname = "trystchild"
+        self.authors = "wholesomenecromancer"
+        self.summary = "Descends from Tryst. Echoes strings."
+        self.version = "0.0.12a"
 
-    trystargs = ["tryst.py"]
+        # Options
+        self.capitalize_option = Option("capitalize-inputs", "Capitalizes arguments before echoing using tryst-chaining.", "C")
+        self.add_option(self.capitalize_option)
 
-    if silent_option in mytryst.useroptions:
-        theirtryst.silence()
+        # consort
+        self.consort(inputs)
 
-    for trysterarg in mytryst.userargs:
-        trystargs.append(trysterarg)
+        self.debug("Example debug statement.")
 
-    mytryst.debug("trystargs prior to call: " + str(trystargs))
+        # use the tryst to govern app behavior
+        if len(self.userargs) < 1:
+            self.debug("No args given.")
+            self.show_usage()
+            self.quit()
+        
+        # Capitalize by using TrystCapitalize
+        if self.capitalize_option in self.useroptions:
+            captryst = TrystCapitalize()                                    # Construct
+            captryst.silence()                                              # Silence console output
+            captryst.main(self.userargs)                                    # Pass the user's arguments 
+            if captryst.outputbuffer:                                       # Get TrystCapitalize's output directly
+                self.userargs = captryst.outputbuffer                       # Replace our userargs before outputting
 
-    trystmain(theirtryst, trystargs)
+        for arrg in self.userargs:
+            self.output(arrg)
+        self.finish()
+#================================================================================
 
-    # Access tryst's output via theirtryst.outputbuffer
-
-    mytryst.write_stdout()
-    mytryst.write_stderr()
-#--------------------------------------------------------------------------------
-
-#------------------------------
+#----------------------------------------
 if __name__ == "__main__":
-    main()
-#------------------------------
+    TrystChild().main()
+#----------------------------------------
+
 ```
 
 # Tests
@@ -154,4 +191,4 @@ Documentation is intended for use with `pdoc`:
 `pdoc -o <destdir> tryst.py`
 
 # Support
-`tryst` intends to be platform-agnostic but has only been tested in Windows 10 environments with PowerShell 5.x and WSL 2.0's Ubuntu 20.x bash.
+Tryst intends to be platform-agnostic but has only been tested in Windows 10 environments with PowerShell 5.x and WSL 2.0's Ubuntu 20.x bash.

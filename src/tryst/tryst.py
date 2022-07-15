@@ -1,24 +1,16 @@
 # tryst.py
 # Copyright 2021 Travis Gates
 
-# In addition to the below license information, Toolshed files must contain
-# The 7 fundamental tenets of the Satanic Temple prior to any code:
-# 1. One should strive to act with compassion and empathy toward all creatures in accordance with reason.
-# 2. The struggle for justice is an ongoing and necessary pursuit that should prevail over laws and institutions.
-# 3. One's body is inviolable, subject to one's own will alone.
-# 4. The freedom of others should be respected, including the freedom to offend. To willfully and unjustly encroach upon the freedoms of another is to forgo one's own.
-# 5. Beliefs should conform to one's best scientific understanding of the world. One should take care never to distort scientific facts to fit one's beliefs.
-# 6. People are fallible. If one makes a mistake, one should do one's best to rectify it and resolve any harm that might have been caused.
-# 7. Every tenet is a guiding principle designed to inspire nobility in action and thought. The spirit of compassion, wisdom, and justice should always prevail over the written or spoken word.
+# One's body is inviolable, subject to one's own will alone.
 
-# This file is part of Toolshed.
+# This file is part of Tryst.
 
-# Toolshed is free software: you can redistribute it and/or modify
+# Tryst is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Toolshed is distributed in the hope that it will be useful,
+# Tryst is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -32,11 +24,10 @@ from json.decoder import JSONDecodeError
 import sys
 import os
 
-#################################################################################
-# Perhaps in principle not the best move, but this helps to standardize
-# behavior when handling JSON so that trysts can behave consistently
-# with minimal effort from an implementing developer.
+# Standardized JSONic behavior. @classmethod behaves similarly to C-style "static".
 class JSONHelper:
+    """Class to deliver consistent JSONic behavior -- saving, loading, to- and from-string conversion.
+    """
     @classmethod
     def save(self, filepath, jsondata, indent_=4, sortkeys_=True) -> bool:
         """Save to `filepath` the indicated `jsondata` with specified indentation 
@@ -74,26 +65,29 @@ class JSONHelper:
         except JSONDecodeError:
             pass
         return retval
-#################################################################################
+#================================================================================
 
-#################################################################################
 class Option:
+    """Data class to represent an option or option-argument.
+    A debug option is created like so: `Option("debug", "Displays debug output during execution.", "d")`
+    """
     def __init__(self, verbose, description, brief=None):
-        """Do not include leading -- with verbose or - with brief identifiers."""
+        """Do not include leading -- with verbose or - with brief identifiers.
+        Brief identifiers are optional."""
         self.verbose = verbose
         self.description = description
         self.brief = brief
-#################################################################################
+#================================================================================
 
-# Like the rendesvouz of the same name, a tryst is a limited-scope engagement
-# with context, parameters, input, and output.
-# A Tryst represents a single entanglement of input and code which results in 
-# output. Trysts are intended to abstract and simplify the definition of 
-# options (switches) and option-arguments, as well as user input which may 
-# activate or supply them respectively.
-#################################################################################
+
 class Tryst:
-    #----------------------------------------
+    """Like the rendesvouz of the same name, a tryst is a limited-scope engagement
+    with context, parameters, input, and output.
+    A Tryst represents a single entanglement of input and code which results in 
+    output. Trysts are intended to abstract and simplify the definition of 
+    options (switches) and option-arguments, as well as user input which may 
+    activate or supply them respectively.
+    """
     # TODO: add duplicate checking?
     def add_option(self, option):
         """Add an option as a switch; usage: [-o | --option]"""
@@ -101,14 +95,12 @@ class Tryst:
             self.options.append(option)
     #----------------------------------------
 
-    #----------------------------------------
     def add_option_argument(self, optionargument):
         """Add an option as an option-argument; usage: [-o=value | --optarg=value]"""
         if optionargument not in self.optionarguments:
             self.optionarguments.append(optionargument)
     #----------------------------------------
 
-    #----------------------------------------
     def interpret(self, inputs=None):
         """Interpret specified input. Populates tryst.useroptions &
         tryst.useroptionarguments based on Option objects added via 
@@ -118,7 +110,9 @@ class Tryst:
 
         self.debug("interpret inputs = " + str(inputs))
 
-        userinput = inputs[1:]
+        userinput = inputs
+        if str(inputs[0]).find(self.appname) > -1:  # Ignore the "tryst.py" 0th argument
+            userinput = inputs[1:]
         for ui in userinput:
             if not isinstance(ui, str):     # Non-strings are considered userargs; this helps with code-time chaining   
                 self.userargs.append(ui)
@@ -126,7 +120,7 @@ class Tryst:
 
         # Simpler input; do we return a sub-object that is the results?
         # Return a namedtuple of useropts, useroptargs, userargs?
-        self.userargs += [arg for arg in userinput if not arg.startswith("-")]
+        self.userargs += [arg for arg in userinput if not str(arg).startswith("-")]
 
         # Options have either - or -- in front of them
         # - options can be stacked, e.g. -dv is equivalent to -d -v
@@ -182,20 +176,17 @@ class Tryst:
                     self.useroptionarguments[oparg] = rawrg
     #----------------------------------------
 
-    #----------------------------------------
     def context(self, callarg):
         """Establish context when run from a shell, such as app location and config."""
         self.workdir = os.path.normpath(os.getcwd())
         self.appdir = os.path.split(callarg)[0]
     #----------------------------------------
 
-    #----------------------------------------
     def silence(self, quiet=True):
         """Toggle tryst.SILENT which determines whether `write_stdout` and `write_stderr` will be called."""
         self.SILENT = quiet
     #----------------------------------------
 
-    #----------------------------------------
     def __load_config(self, configfile="config.json"):
         """Load config data.
         Currently loads JSON from config.json. Flexible."""
@@ -203,7 +194,6 @@ class Tryst:
         self._config = JSONHelper.load(configpath)
     #----------------------------------------
 
-    #----------------------------------------
     def get_config_value(self, configkey, default=None, configfile="config.json"):
         """Get a config value; default allows specification of a default value."""
         if not self._config:
@@ -212,7 +202,6 @@ class Tryst:
         return self._config.get(configkey, default)
     #----------------------------------------
 
-    #----------------------------------------
     def get_config(self, configfile="config.json"):
         """Retrieve the entire config object, a python dict.
         Returns empty dict rather than None."""
@@ -221,36 +210,31 @@ class Tryst:
         return self._config
     #----------------------------------------
 
-    #----------------------------------------
     def get_secret(self, key, default=None):
         filepath = os.path.join(self.appdir, "secrets.json")
         secrets = JSONHelper.load(filepath)
         return secrets.get(key, default)
     #----------------------------------------
 
-    #----------------------------------------
     def debug(self, message):
         """Debug output. Not buffered for better diagnostics. \"printf debugging\"."""
         if self.DEBUG:
             print(str(message))
     #----------------------------------------
 
-    #----------------------------------------
     def output(self, message):
         """Record the specified message object as output in `self.outputbuffer`."""
         self.outputbuffer.append(message)
     #----------------------------------------
 
-    #----------------------------------------
     def error(self, message):
         """Record the specified message object as an error in `self.errorbuffer`."""
         self.errorbuffer.append(message)
     #----------------------------------------
 
-    #----------------------------------------
     def write(self, buff, force=False, destination=sys.stdout):
-        """Write a buffer (list) to destination (file) joined on delimiter (string);
-        optionally force, which will print even if this tryst has been silenced."""
+        """Write a buffer (list) to destination (file).
+        Optionally force, which will print even if this Tryst has been silenced."""
         if not self.SILENT or force:
             for obj in buff:
                 # Treat any dictionary as JSON to standardize more complex output
@@ -260,28 +244,31 @@ class Tryst:
                     print(str(obj), file=destination)
     #----------------------------------------
 
-    #----------------------------------------
     def write_stdout(self, force=False):
         """Write `tryst.outputbuffer` to std out."""
         self.write(self.outputbuffer, force)
     #----------------------------------------
 
-    #----------------------------------------
     def write_stderr(self, force=False):
         """Write `tryst.errorbuffer` to std err."""
         self.write(self.errorbuffer, force, sys.stderr)
     #----------------------------------------
 
+    def finish(self):
+        """Finish the current tryst, write to stdout and stderr.
+        Does not call sys.exit(). Intended for use with chaining."""
+        self.write_stdout()
+        self.write_stderr()
     #----------------------------------------
+
     def quit(self):
-        """Quit the current tryst; write output and error buffers to std.
-        Used chiefly by `show_usage()` and `show_version()`"""
+        """Quit the current tryst; write to stdout and stderr then call sys.exit().
+        Ends the current session. Used chiefly by `show_usage()` and `show_version()`"""
         self.write_stdout()
         self.write_stderr()
         sys.exit()
     #----------------------------------------
 
-    #----------------------------------------
     def __build_usage_token(self, opsh):
         """Build a usage token, e.g. [--debug] or [--help|-?]."""
         opshline = " [--" + opsh.verbose
@@ -291,7 +278,6 @@ class Tryst:
         return opshline
     #----------------------------------------
 
-    #----------------------------------------
     def __write_options(self, collection=[], skiplist=[]):
         """Write `collection` of options for usage instruction; skip objects in `skiplist`."""
         max_verbose_length = len(max([v.verbose for v in collection], key=len))
@@ -308,7 +294,6 @@ class Tryst:
             self.output(message)
     #----------------------------------------
 
-    #----------------------------------------
     def show_usage(self):
         # Use the terse but expressive syntax of GNU/POSIX e.g.
         # app [options] [args] [etc.]
@@ -338,14 +323,12 @@ class Tryst:
         self.__write_options(default_options)
     #----------------------------------------
 
-    #----------------------------------------
     def show_version(self):
-        versionmessage = self.appname + " version " + self.appversion
+        versionmessage = self.appname + " version " + self.version
         versionmessage += " by " + self.authors
         self.output(versionmessage)
     #----------------------------------------
 
-    #----------------------------------------
     def add_default_options(self):
         """Add default options:
         --help | display usage instructions
@@ -360,7 +343,6 @@ class Tryst:
         self.add_option(self.version_option)
     #----------------------------------------
 
-    #----------------------------------------
     def handle_default_options(self):
         """Handle default options specified in tryst.add_default_options()."""
         if self.help_option in self.useroptions:
@@ -373,7 +355,6 @@ class Tryst:
             self.DEBUG = True
     #----------------------------------------
 
-    #----------------------------------------
     def consort(self, inputs=None):
         """Engage tryst. Add default options, interpret inputs, and establish context.
         0th argument should always be the name of the implementing module, e.g. 'tryst.py'."""
@@ -387,16 +368,15 @@ class Tryst:
         self.handle_default_options()
     #----------------------------------------
 
-    #----------------------------------------
+    # TODO: mark deprecated
     def initialize(self, appname, authors, summary, version):
         """Initialize tryst with metadata; appname, authors, summary, version."""
         self.appname = appname
         self.authors = authors
         self.summary = summary
-        self.appversion = version
+        self.version = version
     #----------------------------------------
 
-    #----------------------------------------
     def __init__(self):
         """Lightweight construction sets meaningful defaults."""
         self.options = []
@@ -411,63 +391,59 @@ class Tryst:
         self.appname = ""
         self.summary = ""
         self.authors = ""
-        self.appversion = ""
+        self.version = ""
         self.appdir = ""
         self.workdir = ""
         self._config = {}
 
         self.outputbuffer = []
         self.errorbuffer = []
-#################################################################################
+    #----------------------------------------
 
-#--------------------------------------------------------------------------------
-def main(mytryst=Tryst(), inputs=None):
-    appname = "tryst"
-    authors = "wholesomenecromancer"
-    summary = "Demonstrates basic usage of the tryst module."
-    summary += "\ntryst performs trivial operations on string arguments."
-    version = "0.0.1"
-    mytryst.initialize(appname, authors, summary, version)
+    def main(self, inputs = None):
+        self.appname = "tryst"
+        self.authors = "wholesomenecromancer"
+        self.summary = "Demonstrates basic usage of the tryst module."
+        self.summary += "\ntryst performs trivial operations on string arguments."
+        self.version = "0.0.2"
 
-    # build options and optargs
-    two_option = Option("two", "Print all args twice", "2")
-    err_option = Option("error", "Intentionally write a line to stderr", "e")
-    times_optarg = Option("times", "How many times to print all args", "t")
+        # build options and optargs
+        two_option = Option("two", "Print all args twice", "2")
+        err_option = Option("error", "Intentionally write a line to stderr", "e")
+        times_optarg = Option("times", "How many times to print all args", "t")
 
-    # add options
-    mytryst.add_option(two_option)
-    mytryst.add_option(err_option)
+        # add options
+        self.add_option(two_option)
+        self.add_option(err_option)
 
-    # add optargs
-    mytryst.add_option_argument(times_optarg)
+        # add optargs
+        self.add_option_argument(times_optarg)
 
-    # consort
-    mytryst.consort(inputs)
+        # consort
+        self.consort(inputs)
 
-    mytryst.debug("Example debug statement.")
+        self.debug("Example debug statement.")
 
-    # use the tryst to govern app behavior
-    if len(mytryst.userargs) < 1:
-        mytryst.debug("No args given.")
+        # use the tryst to govern app behavior
+        if len(self.userargs) < 1:
+            self.debug("No args given.")
+            self.show_usage()
 
-    if err_option in mytryst.useroptions:
-        mytryst.error("Example error statement.")
+        if err_option in self.useroptions:
+            self.error("Example error statement.")
 
-    times = int(mytryst.useroptionarguments.get(times_optarg, 1))
-    if two_option in mytryst.useroptions:
-        times *= 2
+        times = int(self.useroptionarguments.get(times_optarg, 1))
+        if two_option in self.useroptions:
+            times *= 2
 
-    for t in range(times):
-        for arrg in mytryst.userargs:
-            mytryst.output(arrg)
+        for t in range(times):
+            for arrg in self.userargs:
+                self.output(arrg)
 
-    mytryst.write_stdout()
-    mytryst.write_stderr()
-#--------------------------------------------------------------------------------
+        self.write_stdout()
+        self.write_stderr()
+#================================================================================
 
-#------------------------------
 if __name__ == "__main__":
-    main()
+    Tryst().main()
 #------------------------------
-
-# end
