@@ -418,56 +418,100 @@ class Tryst:
 
         self.outputbuffer = []
         self.errorbuffer = []
+
+    #----------------------------------------
+    def main(self, inputs = None):
+    #     appname = "tryst"
+    #     authors = "wholesomenecromancer"
+    #     summary = "Demonstrates basic usage of the tryst module."
+    #     summary += "\ntryst performs trivial operations on string arguments."
+    #     version = "0.0.1"
+    #     mytryst.initialize(appname, authors, summary, version)
+
+    #     # build options and optargs
+    #     two_option = Option("two", "Print all args twice", "2")
+    #     err_option = Option("error", "Intentionally write a line to stderr", "e")
+    #     times_optarg = Option("times", "How many times to print all args", "t")
+
+    #     # add options
+    #     mytryst.add_option(two_option)
+    #     mytryst.add_option(err_option)
+
+    #     # add optargs
+    #     mytryst.add_option_argument(times_optarg)
+
+    #     # consort
+    #     mytryst.consort(inputs)
+
+    #     mytryst.debug("Example debug statement.")
+
+    #     # use the tryst to govern app behavior
+    #     if len(mytryst.userargs) < 1:
+    #         mytryst.debug("No args given.")
+
+    #     if err_option in mytryst.useroptions:
+    #         mytryst.error("Example error statement.")
+
+    #     times = int(mytryst.useroptionarguments.get(times_optarg, 1))
+    #     if two_option in mytryst.useroptions:
+    #         times *= 2
+
+    #     for t in range(times):
+    #         for arrg in mytryst.userargs:
+    #             mytryst.output(arrg)
+
+    #     mytryst.write_stdout()
+    #     mytryst.write_stderr()
 #################################################################################
 
 #--------------------------------------------------------------------------------
-def main(mytryst=Tryst(), inputs=None):
-    appname = "tryst"
-    authors = "wholesomenecromancer"
-    summary = "Demonstrates basic usage of the tryst module."
-    summary += "\ntryst performs trivial operations on string arguments."
-    version = "0.0.1"
-    mytryst.initialize(appname, authors, summary, version)
+# def main(mytryst=Tryst(), inputs=None):
+#     appname = "tryst"
+#     authors = "wholesomenecromancer"
+#     summary = "Demonstrates basic usage of the tryst module."
+#     summary += "\ntryst performs trivial operations on string arguments."
+#     version = "0.0.1"
+#     mytryst.initialize(appname, authors, summary, version)
 
-    # build options and optargs
-    two_option = Option("two", "Print all args twice", "2")
-    err_option = Option("error", "Intentionally write a line to stderr", "e")
-    times_optarg = Option("times", "How many times to print all args", "t")
+#     # build options and optargs
+#     two_option = Option("two", "Print all args twice", "2")
+#     err_option = Option("error", "Intentionally write a line to stderr", "e")
+#     times_optarg = Option("times", "How many times to print all args", "t")
 
-    # add options
-    mytryst.add_option(two_option)
-    mytryst.add_option(err_option)
+#     # add options
+#     mytryst.add_option(two_option)
+#     mytryst.add_option(err_option)
 
-    # add optargs
-    mytryst.add_option_argument(times_optarg)
+#     # add optargs
+#     mytryst.add_option_argument(times_optarg)
 
-    # consort
-    mytryst.consort(inputs)
+#     # consort
+#     mytryst.consort(inputs)
 
-    mytryst.debug("Example debug statement.")
+#     mytryst.debug("Example debug statement.")
 
-    # use the tryst to govern app behavior
-    if len(mytryst.userargs) < 1:
-        mytryst.debug("No args given.")
+#     # use the tryst to govern app behavior
+#     if len(mytryst.userargs) < 1:
+#         mytryst.debug("No args given.")
 
-    if err_option in mytryst.useroptions:
-        mytryst.error("Example error statement.")
+#     if err_option in mytryst.useroptions:
+#         mytryst.error("Example error statement.")
 
-    times = int(mytryst.useroptionarguments.get(times_optarg, 1))
-    if two_option in mytryst.useroptions:
-        times *= 2
+#     times = int(mytryst.useroptionarguments.get(times_optarg, 1))
+#     if two_option in mytryst.useroptions:
+#         times *= 2
 
-    for t in range(times):
-        for arrg in mytryst.userargs:
-            mytryst.output(arrg)
+#     for t in range(times):
+#         for arrg in mytryst.userargs:
+#             mytryst.output(arrg)
 
-    mytryst.write_stdout()
-    mytryst.write_stderr()
-#--------------------------------------------------------------------------------
+#     mytryst.write_stdout()
+#     mytryst.write_stderr()
+# #--------------------------------------------------------------------------------
 
 #------------------------------
 if __name__ == "__main__":
-    main()
+    Tryst().main()
 #------------------------------
 
 # end
