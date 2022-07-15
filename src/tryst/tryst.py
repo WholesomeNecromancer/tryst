@@ -1,24 +1,16 @@
 # tryst.py
 # Copyright 2021 Travis Gates
 
-# In addition to the below license information, Toolshed files must contain
-# The 7 fundamental tenets of the Satanic Temple prior to any code:
-# 1. One should strive to act with compassion and empathy toward all creatures in accordance with reason.
-# 2. The struggle for justice is an ongoing and necessary pursuit that should prevail over laws and institutions.
-# 3. One's body is inviolable, subject to one's own will alone.
-# 4. The freedom of others should be respected, including the freedom to offend. To willfully and unjustly encroach upon the freedoms of another is to forgo one's own.
-# 5. Beliefs should conform to one's best scientific understanding of the world. One should take care never to distort scientific facts to fit one's beliefs.
-# 6. People are fallible. If one makes a mistake, one should do one's best to rectify it and resolve any harm that might have been caused.
-# 7. Every tenet is a guiding principle designed to inspire nobility in action and thought. The spirit of compassion, wisdom, and justice should always prevail over the written or spoken word.
+# One's body is inviolable, subject to one's own will alone.
 
-# This file is part of Toolshed.
+# This file is part of Tryst.
 
-# Toolshed is free software: you can redistribute it and/or modify
+# Tryst is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Toolshed is distributed in the hope that it will be useful,
+# Tryst is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -32,10 +24,8 @@ from json.decoder import JSONDecodeError
 import sys
 import os
 
-#################################################################################
-# Perhaps in principle not the best move, but this helps to standardize
-# behavior when handling JSON so that trysts can behave consistently
-# with minimal effort from an implementing developer.
+#================================================================================
+# Standardized JSONic behavior. @classmethod behaves similarly to C-style "static".
 class JSONHelper:
     @classmethod
     def save(self, filepath, jsondata, indent_=4, sortkeys_=True) -> bool:
@@ -74,7 +64,7 @@ class JSONHelper:
         except JSONDecodeError:
             pass
         return retval
-#################################################################################
+#================================================================================
 
 #################################################################################
 class Option:
@@ -126,7 +116,7 @@ class Tryst:
 
         # Simpler input; do we return a sub-object that is the results?
         # Return a namedtuple of useropts, useroptargs, userargs?
-        self.userargs += [arg for arg in userinput if not arg.startswith("-")]
+        self.userargs += [arg for arg in userinput if not str(arg).startswith("-")]
 
         # Options have either - or -- in front of them
         # - options can be stacked, e.g. -dv is equivalent to -d -v
@@ -340,7 +330,7 @@ class Tryst:
 
     #----------------------------------------
     def show_version(self):
-        versionmessage = self.appname + " version " + self.appversion
+        versionmessage = self.appname + " version " + self.version
         versionmessage += " by " + self.authors
         self.output(versionmessage)
     #----------------------------------------
@@ -388,12 +378,13 @@ class Tryst:
     #----------------------------------------
 
     #----------------------------------------
+    # TODO: mark deprecated
     def initialize(self, appname, authors, summary, version):
         """Initialize tryst with metadata; appname, authors, summary, version."""
         self.appname = appname
         self.authors = authors
         self.summary = summary
-        self.appversion = version
+        self.version = version
     #----------------------------------------
 
     #----------------------------------------
@@ -411,7 +402,7 @@ class Tryst:
         self.appname = ""
         self.summary = ""
         self.authors = ""
-        self.appversion = ""
+        self.version = ""
         self.appdir = ""
         self.workdir = ""
         self._config = {}
@@ -421,97 +412,50 @@ class Tryst:
 
     #----------------------------------------
     def main(self, inputs = None):
-    #     appname = "tryst"
-    #     authors = "wholesomenecromancer"
-    #     summary = "Demonstrates basic usage of the tryst module."
-    #     summary += "\ntryst performs trivial operations on string arguments."
-    #     version = "0.0.1"
-    #     mytryst.initialize(appname, authors, summary, version)
+        self.appname = "tryst"
+        self.authors = "wholesomenecromancer"
+        self.summary = "Demonstrates basic usage of the tryst module."
+        self.summary += "\ntryst performs trivial operations on string arguments."
+        self.version = "0.0.2"
 
-    #     # build options and optargs
-    #     two_option = Option("two", "Print all args twice", "2")
-    #     err_option = Option("error", "Intentionally write a line to stderr", "e")
-    #     times_optarg = Option("times", "How many times to print all args", "t")
+        # build options and optargs
+        two_option = Option("two", "Print all args twice", "2")
+        err_option = Option("error", "Intentionally write a line to stderr", "e")
+        times_optarg = Option("times", "How many times to print all args", "t")
 
-    #     # add options
-    #     mytryst.add_option(two_option)
-    #     mytryst.add_option(err_option)
+        # add options
+        self.add_option(two_option)
+        self.add_option(err_option)
 
-    #     # add optargs
-    #     mytryst.add_option_argument(times_optarg)
+        # add optargs
+        self.add_option_argument(times_optarg)
 
-    #     # consort
-    #     mytryst.consort(inputs)
+        # consort
+        self.consort(inputs)
 
-    #     mytryst.debug("Example debug statement.")
+        self.debug("Example debug statement.")
 
-    #     # use the tryst to govern app behavior
-    #     if len(mytryst.userargs) < 1:
-    #         mytryst.debug("No args given.")
+        # use the tryst to govern app behavior
+        if len(self.userargs) < 1:
+            self.debug("No args given.")
+            self.show_usage()
 
-    #     if err_option in mytryst.useroptions:
-    #         mytryst.error("Example error statement.")
+        if err_option in self.useroptions:
+            self.error("Example error statement.")
 
-    #     times = int(mytryst.useroptionarguments.get(times_optarg, 1))
-    #     if two_option in mytryst.useroptions:
-    #         times *= 2
+        times = int(self.useroptionarguments.get(times_optarg, 1))
+        if two_option in self.useroptions:
+            times *= 2
 
-    #     for t in range(times):
-    #         for arrg in mytryst.userargs:
-    #             mytryst.output(arrg)
+        for t in range(times):
+            for arrg in self.userargs:
+                self.output(arrg)
 
-    #     mytryst.write_stdout()
-    #     mytryst.write_stderr()
+        self.write_stdout()
+        self.write_stderr()
 #################################################################################
-
-#--------------------------------------------------------------------------------
-# def main(mytryst=Tryst(), inputs=None):
-#     appname = "tryst"
-#     authors = "wholesomenecromancer"
-#     summary = "Demonstrates basic usage of the tryst module."
-#     summary += "\ntryst performs trivial operations on string arguments."
-#     version = "0.0.1"
-#     mytryst.initialize(appname, authors, summary, version)
-
-#     # build options and optargs
-#     two_option = Option("two", "Print all args twice", "2")
-#     err_option = Option("error", "Intentionally write a line to stderr", "e")
-#     times_optarg = Option("times", "How many times to print all args", "t")
-
-#     # add options
-#     mytryst.add_option(two_option)
-#     mytryst.add_option(err_option)
-
-#     # add optargs
-#     mytryst.add_option_argument(times_optarg)
-
-#     # consort
-#     mytryst.consort(inputs)
-
-#     mytryst.debug("Example debug statement.")
-
-#     # use the tryst to govern app behavior
-#     if len(mytryst.userargs) < 1:
-#         mytryst.debug("No args given.")
-
-#     if err_option in mytryst.useroptions:
-#         mytryst.error("Example error statement.")
-
-#     times = int(mytryst.useroptionarguments.get(times_optarg, 1))
-#     if two_option in mytryst.useroptions:
-#         times *= 2
-
-#     for t in range(times):
-#         for arrg in mytryst.userargs:
-#             mytryst.output(arrg)
-
-#     mytryst.write_stdout()
-#     mytryst.write_stderr()
-# #--------------------------------------------------------------------------------
 
 #------------------------------
 if __name__ == "__main__":
     Tryst().main()
 #------------------------------
-
-# end
